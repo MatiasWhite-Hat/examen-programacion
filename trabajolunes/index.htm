@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trabajo Programacion - Dashboard</title>
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/stylee.css?v=13">
+</head>
+<body>
+
+    <nav class="navbar navbar-dark border-bottom">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-semibold" href="#">Trabajo Programacion</a>
+            <span class="navbar-context">Matias Quiroz</span>
+        </div>
+    </nav>
+
+    <main class="container-fluid dashboard-shell">
+        <header class="dashboard-heading">
+            <div>
+                <h1 class="mb-1">Panel de ciberseguridad</h1>
+                <p class="dashboard-intro mb-0">Consulta brechas, URLs, direcciones IP y exposición de contraseñas.</p>
+            </div>
+        </header>
+
+        <nav class="module-nav" id="menuModulos" aria-label="Módulos de consulta">
+            <button id="navModuloBrechas" class="module-tab active" type="button" aria-current="page" aria-pressed="true">
+                Brechas de correo
+            </button>
+            <button id="navModuloOpenPhish" class="module-tab" type="button" aria-pressed="false">
+                OpenPhish
+            </button>
+            <button id="navModuloInternetDB" class="module-tab" type="button" aria-pressed="false">
+                Shodan InternetDB
+            </button>
+            <button id="navModuloPwnedPasswords" class="module-tab" type="button" aria-pressed="false">
+                Contraseñas expuestas
+            </button>
+        </nav>
+
+        <div class="row">
+            <div class="col-12">
+                
+                <!-- Consulta de brechas -->
+                <div id="vistaModuloBrechas">
+                    <section class="card bg-black border border-secondary border-opacity-25 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-semibold mb-2">Buscar brechas por correo</h5>
+                            <p class="text-muted small mb-3">Consulta si una dirección aparece en filtraciones conocidas.</p>
+                            <form id="formCorreo" class="row g-3" novalidate>
+                                <div class="col-md-8">
+                                    <label for="inputCorreo" class="form-label">Dirección de correo</label>
+                                    <input type="email" id="inputCorreo" class="form-control" placeholder="nombre@dominio.com">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label d-none d-md-block">&nbsp;</label>
+                                    <button id="btnConsultar" type="submit" class="btn btn-primary w-100 fw-semibold">Consultar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Métricas -->
+                    <section class="row g-3 mb-4" id="seccionMetricas" style="display: none;">
+                        <div class="col-md-4">
+                            <div class="card bg-black border border-danger border-opacity-50 shadow-sm border-start border-4 border-danger">
+                                <div class="card-body">
+                                    <h6 class="text-muted text-uppercase fs-7 fw-bold">Brechas Totales</h6>
+                                    <h3 id="statTotal" class="fw-bold text-danger mb-0">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-black border border-warning border-opacity-50 shadow-sm border-start border-4 border-warning">
+                                <div class="card-body">
+                                    <h6 class="text-muted text-uppercase fs-7 fw-bold">Industrias Impactadas</h6>
+                                    <h3 id="statIndustrias" class="fw-bold text-warning mb-0">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-black border border-success border-opacity-50 shadow-sm border-start border-4 border-success">
+                                <div class="card-body">
+                                    <h6 class="text-muted text-uppercase fs-7 fw-bold">Nivel de Riesgo</h6>
+                                    <h3 class="fw-bold text-success mb-0 fs-5 mt-1">Evaluado</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Resultados -->
+                    <section class="card bg-black border border-secondary border-opacity-25 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center mb-3">
+                                <div class="col-md-6 mb-2 mb-md-0">
+                                    <h5 class="card-title fw-semibold mb-0">Resultados</h5>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" id="inputFiltro" class="form-control" placeholder="Filtrar resultados..." disabled>
+                                </div>
+                            </div>
+
+                            <div id="loading" class="text-center py-5 text-muted" style="display: none;">
+                                <div class="spinner-border text-primary mb-2" role="status"></div>
+                                <p class="mb-0">Consultando...</p>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-dark table-hover align-middle mb-0" id="tablaBrechas" style="display: none;">
+                                    <thead class="table-secondary text-dark">
+                                        <tr>
+                                            <th>Plataforma / Brecha</th>
+                                            <th>Fecha / Año</th>
+                                            <th>Industria</th>
+                                            <th>Datos Expuestos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyBrechas"></tbody>
+                                </table>
+                                <div id="mensajeEstado" class="text-center py-5 text-muted bg-secondary bg-opacity-10 rounded border border-secondary border-opacity-25">
+                                    Ingresa una dirección de correo y presiona <strong>Consultar</strong> para iniciar.
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Consulta de URLs -->
+                <div id="vistaModuloOpenPhish" style="display: none;">
+                    <section class="card bg-black border border-secondary border-opacity-25 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-semibold mb-2">Comprobar URL de phishing</h5>
+                            <p class="text-muted small mb-3">Compara el dominio con el feed comunitario público de OpenPhish. No requiere API key y no envía la URL que consultas.</p>
+
+                            <form id="formOpenPhish" class="row g-3" novalidate>
+                                <div class="col-md-9">
+                                    <label for="inputValorOpenPhish" class="form-label">URL o dominio</label>
+                                    <input type="url" id="inputValorOpenPhish" class="form-control" placeholder="https://example.com">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label d-none d-md-block">&nbsp;</label>
+                                    <button id="btnConsultarOpenPhish" type="submit" class="btn btn-primary w-100 fw-semibold">Comprobar</button>
+                                </form>
+                            </div>
+                            <p class="small text-muted mt-3 mb-0">
+                                El feed comunitario se actualiza cada 12 horas y es para uso no comercial.
+                                <a href="https://openphish.com/terms.html" target="_blank" rel="noopener noreferrer">Condiciones de OpenPhish</a>.
+                                Detecta phishing; no analiza malware ni equivale a VirusTotal.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section class="card bg-black border border-secondary border-opacity-25 shadow-sm">
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-semibold mb-3">Resultados</h5>
+                            
+                            <div id="loadingOpenPhish" class="text-center py-5 text-muted" style="display: none;">
+                                <div class="spinner-border mb-2" role="status"></div>
+                                <p class="mb-0">Descargando feed público...</p>
+                            </div>
+
+                            <div id="resultadoOpenPhish" class="bg-dark p-3 rounded border border-secondary border-opacity-25 text-light" style="display: none;">
+                            </div>
+
+                            <div id="mensajeOpenPhish" class="text-center py-5 text-muted bg-secondary bg-opacity-10 rounded border border-secondary border-opacity-25">
+                                Ingresa una URL y presiona <strong>Comprobar</strong>.
+                            </div>
+                            <p class="small text-muted mt-3 mb-0">Un dominio sin coincidencias no está garantizado como seguro. El feed puede no contener amenazas nuevas.</p>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Consulta de direcciones IP -->
+                <div id="vistaModuloInternetDB" style="display: none;">
+                    <section class="card bg-black border border-secondary border-opacity-25 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-semibold mb-2 text-white">
+                                Consultar dirección IP
+                            </h5>
+                            <p class="text-muted small mb-3">
+                                Consulta puertos, hosts y vulnerabilidades asociadas a una IP.
+                            </p>
+                            <form id="formInternetDB" class="row g-3" novalidate>
+                                <div class="col-md-8">
+                                    <label for="inputIPInternetDB" class="form-label">Dirección IP</label>
+                                    <input type="text" id="inputIPInternetDB" class="form-control"
+                                           placeholder="Ejemplo: 8.8.8.8 o 2001:4860:4860::8888" autocomplete="off" spellcheck="false">
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button id="btnConsultarInternetDB" type="submit" class="btn btn-primary w-100 fw-semibold">
+                                        Consultar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card bg-black border border-secondary border-opacity-25 shadow-sm">
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-semibold mb-3">Resultados</h5>
+                            <div id="loadingInternetDB" class="text-center py-5 text-muted" style="display: none;">
+                                <div class="spinner-border text-info mb-2" role="status"></div>
+                                <p class="mb-0">Consultando Shodan InternetDB...</p>
+                            </div>
+                            <div id="resultadoInternetDB" class="bg-dark p-3 rounded border border-secondary border-opacity-25 text-light" style="display: none;"></div>
+                            <div id="mensajeInternetDB" class="text-center py-5 text-muted bg-secondary bg-opacity-10 rounded border border-secondary border-opacity-25">
+                                Ingresa una IP pública y presiona <strong>"Consultar IP"</strong>.
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Consulta de contraseñas -->
+                <div id="vistaModuloPwnedPasswords" style="display: none;">
+                    <section class="card bg-black border border-secondary border-opacity-25 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-semibold mb-2">Comprobar contraseña expuesta</h5>
+                            <p class="text-muted small mb-3">
+                                Comprueba si la contraseña aparece en filtraciones conocidas mediante el servicio Pwned Passwords.
+                            </p>
+                            <form id="formPwnedPasswords" class="row g-3" novalidate>
+                                <div class="col-md-9">
+                                    <label for="inputContrasenaPwned" class="form-label">Contraseña</label>
+                                    <input type="password" id="inputContrasenaPwned" class="form-control"
+                                           placeholder="Escribe una contraseña" autocomplete="off" spellcheck="false">
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button id="btnConsultarPwnedPasswords" type="submit" class="btn btn-primary w-100 fw-semibold">
+                                        Comprobar
+                                    </button>
+                                </form>
+                            </div>
+                            <p class="small text-muted mt-3 mb-0">
+                                La contraseña se procesa en este navegador. Solo se consulta el prefijo de 5 caracteres de su hash SHA-1;
+                                no se envía la contraseña ni el hash completo.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section class="card bg-black border border-secondary border-opacity-25 shadow-sm">
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-semibold mb-3">Resultados</h5>
+                            <div id="loadingPwnedPasswords" class="text-center py-5 text-muted" style="display: none;">
+                                <div class="spinner-border text-primary mb-2" role="status"></div>
+                                <p class="mb-0">Comprobando exposición...</p>
+                            </div>
+                            <div id="resultadoPwnedPasswords" class="pwned-result rounded border" style="display: none;"
+                                 role="status" aria-live="polite"></div>
+                            <div id="mensajePwnedPasswords" class="text-center py-5 text-muted bg-secondary bg-opacity-10 rounded border border-secondary border-opacity-25">
+                                Ingresa una contraseña y presiona <strong>Comprobar</strong>.
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-3 text-muted border-top border-secondary bg-black mt-5">
+        <small>CFT Estatal Región de Valparaíso - TNS en Informática Mención Ciberseguridad</small>
+    </footer>
+
+    <script src="java/script.js"></script>
+</body>
+</html>
